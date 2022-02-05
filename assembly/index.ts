@@ -1,81 +1,38 @@
-// @nearfile
-import { context, storage, logging, PersistentMap } from "near-sdk-as";
 
-// --- contract code goes below
+import { context, Context, logging, storage, u128, u256, util } from 'near-sdk-as'
+import { init, totalSupply, name,
+ symbol, balanceOf, transfer, transferFrom, allowance, approve } from './token';
 
-const balances = new PersistentMap<string, u64>("b:");
-const approves = new PersistentMap<string, u64>("a:");
-
-const TOTAL_SUPPLY: u64 = 1000000;
-var NAME: string;
-var SYMBOL: string;
-
-export function init(name: string, symbol: string): void {
-  const owner = context.sender;
-  logging.log("initialOwner: " + owner);
-  NAME = name;
-  SYMBOL = symbol;
-  assert(storage.get<string>("init") == null, "Already initialized token supply");
-  balances.set(owner, TOTAL_SUPPLY);
-  storage.set("init", "done");
+export function InitToken(): bool {
+    init("DAI", "DAI");
+    return true;
 }
 
-export function name(): string {
-  return NAME;
+export function getTokenName(): string {
+    return name();
 }
 
-export function symbol(): string {
-  return SYMBOL;
+export function getTokenSymbol(): string {
+    return symbol();
 }
 
-export function totalSupply(): string {
-  return TOTAL_SUPPLY.toString();
+export function getTokenTotalSupply(): string {
+    return totalSupply();
 }
 
-export function balanceOf(tokenOwner: string): u64 {
-  logging.log("balanceOf: " + tokenOwner);
-  if (!balances.contains(tokenOwner)) {
-    return 0;
-  }
-  const result = balances.getSome(tokenOwner);
-  return result;
+export function getBalanceOf(tokenOwner: string): u64 {
+    return balanceOf(tokenOwner);
 }
 
-export function allowance(tokenOwner: string, spender: string): u64 {
-  const key = tokenOwner + ":" + spender;
-  if (!approves.contains(key)) {
-    return 0;
-  }
-  return approves.getSome(key);
+export function transferToken(to: string, tokens: u64): boolean {
+    return transfer(to, tokens);
 }
 
-export function transfer(to: string, tokens: u64): boolean {
-  logging.log("transfer from: " + context.sender + " to: " + to + " tokens: " + tokens.toString());
-  const fromAmount = getBalance(context.sender);
-  assert(fromAmount >= tokens, "not enough tokens on account");
-  assert(getBalance(to) <= getBalance(to) + tokens,"overflow at the receiver side");
-  balances.set(context.sender, fromAmount - tokens);
-  balances.set(to, getBalance(to) + tokens);
-  return true;
-}
+export function swap(rate: u32, type: u8):bool {
+    let depositedAmount:u128 = context.attachedDeposit;
+        depositedAmount = u128.div(depositedAmount, u128.from('10000000000000000000000'));
 
-export function approve(spender: string, tokens: u64): boolean {
-  logging.log("approve: " + spender + " tokens: " + tokens.toString());
-  approves.set(context.sender + ":" + spender, tokens);
-  return true;
-}
+        let outputAmount:u128 = u128.mul(depositedAmount, u128.fromU32(rate));
 
-export function transferFrom(from: string, to: string, tokens: u64): boolean {
-  const fromAmount = getBalance(from);
-  assert(fromAmount >= tokens, "not enough tokens on account");
-  const approvedAmount = allowance(from, to);
-  assert(tokens <= approvedAmount, "not enough tokens approved to transfer");
-  assert(getBalance(to) <= getBalance(to) + tokens,"overflow at the receiver side");
-  balances.set(from, fromAmount - tokens);
-  balances.set(to, getBalance(to) + tokens);
-  return true;
-}
-
-function getBalance(owner: string): u64 {
-  return balances.contains(owner) ? balances.getSome(owner) : 0;
+        return transferToken(context.sender, outputAmount.toU64());
 }

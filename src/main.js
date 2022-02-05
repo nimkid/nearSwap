@@ -14,8 +14,8 @@ async function connect() {
 
   // Initializing our contract APIs by contract name and configuration.
   window.contract = await near.loadContract(nearConfig.contractName, {
-    viewMethods: ['totalSupply', 'balanceOf', 'allowance'],
-    changeMethods: ['init', 'transfer', 'approve', 'transferFrom'],
+    viewMethods: ['getTokenName', 'getTokenSymbol', 'getTokenTotalSupply', 'getBalanceOf'],
+    changeMethods: ['InitToken', 'transferToken', 'swap'],
     sender: window.walletAccount.getAccountId()
   });
 }
@@ -26,6 +26,24 @@ function updateUI() {
   } else {
     Array.from(document.querySelectorAll('.after-sign-in')).map(it => it.style = 'display: block;');
   }
+}
+
+export async function sendToken(_from, _to, _amount) {
+  const account = await window.near.account(_from);
+  let result = await account.sendMoney(
+      _to, // receiver account
+      _amount // amount in yoctoNEAR
+  );
+  return result;
+}
+
+export function convertNearAmount(amount) {
+  return nearAPI.utils.format.parseNearAmount(amount);
+}
+
+export async function getAccountBalance(_account) {
+  const account = await near.account(_account);
+  return await account.getAccountBalance();
 }
 
 // Log in user using NEAR Wallet on "Sign In" button click
