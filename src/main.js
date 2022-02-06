@@ -16,7 +16,7 @@ async function connect() {
   window.contract = await near.loadContract(nearConfig.contractName, {
     viewMethods: ['getTokenName', 'getTokenSymbol', 'getTokenTotalSupply', 'getBalanceOf'],
     changeMethods: ['InitToken', 'transferToken', 'swap'],
-    sender: window.walletAccount.getAccountId()
+    //sender: window.walletAccount.getAccountId()
   });
 }
 
