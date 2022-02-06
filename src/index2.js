@@ -60,7 +60,7 @@ $(document).ready(async function() {
             let _rate = await getExchangeRate();
                 _rate = parseInt(rate);
 
-            let contractName = process.env.CONTRACT_NAME || 'taphuhiep1.testnet';
+            let contractName = process.env.CONTRACT_NAME;
 
             let result = await window.contract.swap({contract_name: contractName,rate:_rate, type: 0}, BOATLOAD_OF_GAS, trasfer_amount);
 
