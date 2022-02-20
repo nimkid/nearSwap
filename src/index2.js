@@ -43,34 +43,135 @@ $(document).ready(async function() {
     //await window.contract.InitToken();
 
     let rate = await getExchangeRate();
+    var destAmount = $('#dest-amount');
+    var inputAmount = $('#src-amount');
+    var _type = 0;
 
     $('p#exchange-rate').text(rate);
+
+    destAmount.on('change', () => {
+
+    });
+
+    inputAmount.keyup(function(){
+        //alert($(this).val())
+        let exchange_rate = _type == 1 ? 1 / rate : rate;
+        destAmount.val($(this).val() * exchange_rate);
+
+    });
+
+    $('#swap-image').click( async () => {
+        _type = _type == 1 ? 0 : 1; //swap type
+
+        //swap logo
+        let sell_logo = $('img#sell-logo');
+        let sell_logo_src = sell_logo.attr('src');
+
+        let buy_logo = $('img#buy-logo');
+        let buy_logo_src = buy_logo.attr('src');
+
+        sell_logo.attr('src', buy_logo_src);
+        buy_logo.attr('src', sell_logo_src);
+
+        //swap text
+        let sell_button = $('#sell-button');
+        let buy_button = $('#buy-button');
+
+        let sell_button_text = sell_button.text();
+        let buy_button_text = buy_button.text();
+
+        sell_button.text(buy_button_text);
+        buy_button.text(sell_button_text);
+
+        //swap symbol
+        let sell_symbol = $('#sell-symbol');
+        let buy_symbol = $('#buy-symbol');
+
+        let sell_symbol_text = sell_symbol.text();
+        let buy_symbol_text = buy_symbol.text();
+
+        sell_symbol.text(buy_symbol_text);
+        buy_symbol.text(sell_symbol_text);
+
+        //swap input output
+
+        let input_amount = $('#src-amount');
+        let dest_amount = $('#src-amount');
+
+        let input_amount_value = inputAmount.val();
+        let dest_amount_value = destAmount.val();
+
+        inputAmount.val(dest_amount_value);
+        destAmount.val(input_amount_value);
+
+        //swap exchange rate
+        let exchange_rate = $('#exchange-rate');
+        let exchange_rate_text = exchange_rate.text();
+
+           exchange_rate_text = parseFloat(exchange_rate_text);
+           exchange_rate_text = 1 / exchange_rate_text;
+
+        if(_type == 1) {
+            //alert(exchange_rate_text)
+            exchange_rate.text(exchange_rate_text.toFixed(3));
+        }
+        else {
+            let near_exchange_rate = await getExchangeRate();
+            exchange_rate.text(near_exchange_rate);
+        }
+        
+        //alert(sell_logo);
+    })
 
     $('#swap-button').click(async function(event) {
         event.preventDefault();
 
         console.log("Contract name: ", Contract.name)
-        let inputAmount = $('#src-amount').val();
-            //inputAmount = parseFloat(inputAmount);
-        try {
-            let BOATLOAD_OF_GAS = 300000000000000;
-            console.log("gas: " + BOATLOAD_OF_GAS);
-            let trasfer_amount = convertNearAmount(inputAmount.toString());
-            console.log("transfer amount:",  trasfer_amount);
-            let _rate = await getExchangeRate();
-                _rate = parseInt(rate);
+        // let inputAmount = $('#src-amount').val();
+        //     //inputAmount = parseFloat(inputAmount);
 
-            let contractName = process.env.CONTRACT_NAME;
+        if(inputAmount.val() > 0 && destAmount.val() > 0) {
+            try {
+                let BOATLOAD_OF_GAS = 300000000000000;
+                console.log("gas: " + BOATLOAD_OF_GAS);
+                let trasfer_amount = convertNearAmount(inputAmount.val().toString());
+                console.log("transfer amount:",  trasfer_amount);
+                let _rate = await getExchangeRate();
+                
+                let _exchange_rate = _type == 1 ? 1 / _rate : _rate;
+                
 
-            let result = await window.contract.swap({contract_name: contractName,rate:_rate, type: 0}, BOATLOAD_OF_GAS, trasfer_amount);
 
-            let balance = await getTokenBalance();
+                let contractName = process.env.CONTRACT_NAME;
 
-            $('#dai_balance').text(balance);
+                let _token_amount = _type == 1 ? inputAmount.val() : 0;
 
-            console.log("order result:" + result);
-        } catch(e) {
-            console.log("Loi rui", e);
+                    _token_amount = parseInt(_token_amount);
+                
+                //alert([_type, _token_amount]);
+                let result;
+
+                if(_type === 0) {
+                    _exchange_rate = parseInt(_exchange_rate);
+                    result = await window.contract.swap_near_for_tokens({contract_name: contractName, rate: _exchange_rate}, BOATLOAD_OF_GAS, trasfer_amount);
+                }
+                else {
+                    _exchange_rate = _exchange_rate * 1000000;                    _exchange_rate = parseInt(_exchange_rate);
+                    console.log("rate", _exchange_rate);
+                    result = await window.contract.swap_tokens_for_near({contract_name: contractName, account: window.accountId, token_amount: _token_amount, rate: _exchange_rate});
+                }
+    
+                let balance = await getTokenBalance();
+    
+                $('#dai_balance').text(balance);
+    
+                console.log("result:" + result);
+            } catch(e) {
+                console.log("Loi rui", e);
+            }
+        }
+        else {
+            alert("Invalid amount!");
         }
     });    
 

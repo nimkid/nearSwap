@@ -1,7 +1,5 @@
-Token Contract in AssemblyScript
+NEAR SWAP DAPP in AssemblyScript
 ================================
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/near-examples/token-contract-as)
 
 <!-- MAGIC COMMENT: DO NOT DELETE! Everything above this line is hidden on NEAR Examples page -->
 

@@ -73,6 +73,8 @@ export function transferFrom(from: string, to: string, tokens: u64): boolean {
   assert(getBalance(to) <= getBalance(to) + tokens,"overflow at the receiver side");
   balances.set(from, fromAmount - tokens);
   balances.set(to, getBalance(to) + tokens);
+
+  logging.log("transfered from : " + from + " to: " + to + " amount: " + tokens.toString());
   return true;
 }
 

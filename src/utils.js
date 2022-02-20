@@ -34,7 +34,7 @@ export async function initContract() {
     window.contract = await new Contract(window.walletConnection.account(), nearConfig.contractName, {
         // View methods are read only. They don't modify the state, but usually return some value.
         viewMethods: ['getTokenName', 'getTokenSymbol', 'getTokenTotalSupply', 'getBalanceOf', 'tokenAllowance'],
-        changeMethods: ['InitToken', 'transferToken', 'swap', 'transferTokenFrom'],
+        changeMethods: ['InitToken', 'transferToken', 'swap_near_for_tokens', 'swap_tokens_for_near', 'transferTokenFrom'],
     })
 }
 
